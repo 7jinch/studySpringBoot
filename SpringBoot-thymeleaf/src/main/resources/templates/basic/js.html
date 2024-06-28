@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>타임리프와 자바스크립트</title>
+	<script th:inline="javascript">
+	// 변수 할당하기
+		// let name = '[[${member.name}]]';
+		// let age = '[[${member.age}]]';
+		let name = [[${member.name}]];
+		let age = [[${member.age}]];
+		let member = [[${member}]];
+		console.log(name, age);
+		console.log(member);
+	</script>
+	<script th:inline="javascript">
+	// 반복문
+		[# th:each="member : ${memberList}"]
+			let user[[${memberStat.count}]] = [[${member}]];
+		[/]
+	</script>
+</head>
+<body>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>thymeleaf 태그들</title>
+</head>
+<body>
+	<h1>타임리프 태그들</h1>
+	<th:block th:each="member : ${memberList}">
+		<div th:text="${member.name}"></div>
+	</th:block>
+</body>
+</html>

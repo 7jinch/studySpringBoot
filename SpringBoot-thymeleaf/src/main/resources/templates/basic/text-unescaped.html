@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8">
+		<title>이스케이프 문자 출력 테스트</title>
+	</head>
+	<body>
+		<h1>text와 utext 비교</h1>
+		<ul>
+			<li>th:text - <span th:text="${data}"></span></li>
+			<li>th:utext - <span th:utext="${data}"></span></li>
+		</ul>
+		
+		<p>컨텐츠 내에서 대괄호 두 개를 표시<span th:inline="none">[[표시하고 싶은 내용]] vs [(표시하고 싶은 내용)]</span></p>
+		<p><span th:text="${data}">[[]]</span></p>
+		<p><span th:utext="${data}">[()]</span></p>
+	</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>네이버</title>
+    <style>
+        /* 간단한 스타일링 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        header {
+            background-color: #03c75a;
+            color: #ffffff;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav a {
+            margin: 0 10px;
+            color: #333333;
+            text-decoration: none;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+        }
+        .content {
+            padding: 20px 0;
+            text-align: center;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            background-color: #eeeeee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>네이버</h1>
+        </header>
+        <nav class="nav">
+            <a href="#">뉴스</a>
+            <a href="#">스포츠</a>
+            <a href="#">연예</a>
+            <a href="#">경제</a>
+            <a href="#">라이프</a>
+        </nav>
+        <div class="content">
+            <h2>네이버 메인 페이지</h2>
+            <p>이곳에 네이버 메인 페이지의 내용이 들어갈 수 있습니다.</p>
+            <h1>타코마켓 - 회원가입</h1>
+			<form action="modelattribute-v1" method="POST">
+			    아이디: <input type="text" name="id">
+			    이름: <input type="text" name="name">
+			    나이: <input type="text" name="age">
+			    <button type="submit">전송하기</button>
+			</form>
+        </div>
+        <footer>
+            <p>&copy; 2024 네이버. All Rights Reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

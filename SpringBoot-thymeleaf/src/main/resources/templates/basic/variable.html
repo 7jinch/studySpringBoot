@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Spring Expression Language</title>
+</head>
+<body>
+	<h1>Spring Expression Language</h1>
+	<ul>
+		<h3>object</h3>
+		<li>member.name: <span th:text="${member.name}"></span></li>
+		<li>member['name']<span th:text="${member['name']}"></span></li>
+		<li>member.getName(): <span th:text="${member.getName()}"></span></li>
+	</ul>
+	<ul>
+		<h3>list</h3>
+		<li>memberList[0].name: <span th:text="${memberList[0].name}"></span></li>
+		<li>memberList[0]['name']: <span th:text="${memberList[0]['name']}"></span></li>
+		<li>memberList[0].getName(): <span th:text="${memberList[0].getName()}"></span></li>
+	</ul>
+	<ul>
+		<h3>map</h3>
+		<li>memberMap['member1'].name: <span th:text="${memberMap['member1'].name}"></span></li>
+		<li>memberMap['member1']['name']: <span th:text="${memberMap['member1']['name']}"></span></li>
+		<li>memberMap['member1'].getName(): <span th:text="${memberMap['member1'].getName()}"></span></li>
+	</ul>
+</body>
+</html>

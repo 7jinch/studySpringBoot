@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>조건문</title>
+</head>
+<body>
+	<h1>if, unless 조건문</h1>
+	<table border="1">
+		<tr>
+			<th>아이디</th>
+			<th>비밀번호</th>
+			<th>나이</th>
+		</tr>
+		<tr th:each="member : ${memberList}">
+			<td th:text="${member.id}"></td>
+			<td th:text="${member.name}"></td>
+			<td>
+				<span th:text="${member.age}"></span>
+				<span th:if="${member.age >= 30}" th:text="'30살 이상'"></span>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

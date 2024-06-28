@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>url link</title>
+</head>
+<body>
+	<h1>url link</h1>
+	<ul>
+		<!-- 해당 url로 이동할 때 쿼리를 담아서 이동할 수 있음 -->
+		<li><a th:href="@{/hello(param1=${param1},param2=${param2})}">basic url</a></li>
+		<li><a th:href="@{/hello/{param1}(param1=${param1})}">경로 변수 1</a></li>
+		<li><a th:href="@{/hello/{param1}/{param2}(param1=${param1},param2=${param2})}">경로 변수 2</a></li>
+		<li><a th:href="@{/hello/{param1}(param1=${param1},param2=${param2})}">경로 변수 3</a></li>
+	</ul>
+</body>
+</html>
