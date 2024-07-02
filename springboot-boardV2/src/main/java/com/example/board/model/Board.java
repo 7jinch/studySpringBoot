@@ -2,12 +2,21 @@ package com.example.board.model;
 
 import java.time.LocalDateTime;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Entity
+@Getter @Setter @ToString @NoArgsConstructor
 public class Board {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY) // 자동 생성
 	private Long id;
 	private String title;
 	private String contents;
