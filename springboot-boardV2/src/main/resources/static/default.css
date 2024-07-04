@@ -19,3 +19,7 @@ th, td {
 .center {
     text-align: center;
 }
+
+.error {
+	color: red;
+}

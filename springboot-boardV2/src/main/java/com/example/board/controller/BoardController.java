@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.board.model.Board;
+import com.example.board.model.board.Board;
 import com.example.board.repository.BoardRepository;
 import com.example.board.service.BoardService;
 
@@ -29,7 +29,7 @@ public class BoardController {
 	@GetMapping("/")
 	public String home() {
 		log.info("home() 실행");
-		return "index";
+		return "redirect:/list";
 	}
 	
 	// 게시글 작성 페이지 이동
