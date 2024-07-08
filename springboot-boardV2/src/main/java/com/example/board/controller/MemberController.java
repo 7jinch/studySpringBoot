@@ -1,5 +1,7 @@
 package com.example.board.controller;
 
+import java.util.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +17,10 @@ import com.example.board.model.member.MemberJoinForm;
 import com.example.board.model.member.MemberLoginForm;
 import com.example.board.service.MemberService;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -66,14 +72,14 @@ public class MemberController {
 		if(findMember == null) { // 해당 id의 회원이 없으면
 			memberService.saveMember(member); // 회원가입 진행
 			log.info("회원가입 성공");
-			return "redirect:/list";
+			return "redirect:/";
 		} else if(findMember != null) {
 //			model.addAttribute("에러메시지", "아이디 중복");
 			result.reject("아이디 에러", "아이디 중복");
 			return "member/joinForm";
 		}
 		log.info("회원가입 실패");
-		return "redirect:/list";
+		return "redirect:/";
 	}
 	
 	// 로그인 페이지 이동
@@ -85,7 +91,11 @@ public class MemberController {
 	
 	@PostMapping("login")
 	public String login(@Validated @ModelAttribute(value="loginForm") MemberLoginForm memberLoginForm,
-						BindingResult result, Model model) {
+						BindingResult result, // 유효성 검사 및 에러 처리
+						Model model,
+						HttpServletResponse response, // 쿠키
+						HttpServletRequest request // 세션
+						) {
 		log.info("입력값: {}", memberLoginForm);
 		
 		if(result.hasErrors()) {
@@ -93,22 +103,73 @@ public class MemberController {
 		}
 		
 		// 로그인 검증
-		// 1. db에 가서 id가 member 테이블에 있는지 확인
+		// 1. db에 가서 id가 member 테이블에 있는지 확인 -> 없으면 reject()
 		Member findMember = memberService.findMemberById(memberLoginForm.getMember_id());
 		
-		// 2. 그 id가 가지고 있는 password와 입력받은 password가 일치하는지 확인
 		if(findMember == null) {
-			result.reject("로그인 에러", "아이디나 비밀번호를 제대로 입력하시오");
-			return "member/login";
-		} else if(findMember.getPassword().equals(memberLoginForm.getPassword())) {
-			result.reject("로그인 에러", "아이디 또는 비밀번호가 틀림");
-			return "member/login";
+			result.reject("로그인에러", "없는 회원");
+			return "member/loginForm";
+		}
+		
+		// 2. 그 id가 가지고 있는 password와 입력받은 password가 일치하는지 확인 -> 다르면 reject()
+		if(!findMember.getPassword().equals(memberLoginForm.getPassword())) {	
+			result.reject("로그인에러", "아이디 또는 비밀번호가 틀림");
+			return "member/loginForm";
 		}
 
-		// 3. 맞으면 로그인, 다르면 reject()
+		// 3. 로그인 처리
+		// 3-1. 쿠키를 이용한 로그인
+		// 쿠키: 웹 브라우저와 서버의 도메인 사이에 생성된 데이터로 [클라이언트] 사이드에 저장
+//		Cookie cookie = new Cookie("cookieLoginId", findMember.getMember_id());
+//		cookie.setPath("/"); // 쿠키를 최상위경로에 저장
+//		response.addCookie(cookie);
+		
+		// 3-2. 세션을 이용한 로그인
+		// 세션: 웹 브라우저와 서버 사이에 생성된 데이터로 [서버] 사이드에 저장
+		HttpSession session = request.getSession();
+		session.setAttribute("loginMember", findMember);
 		
 		
-		model.addAttribute("로그인", "로그인 성공");
+		return "redirect:/";
+	}
+	
+	@GetMapping("sessioninfo")
+	public String sessionInfo(HttpServletRequest request) {
+		// getRequest의 파라미터
+		// 안 주면 세션이 없는 경우에 만듬
+		// false를 주면 세션이 없을 경우 null을 반환함
+		HttpSession session = request.getSession(false);
+		if(session == null) {
+			return "redirect:/member/login";
+		}
+		log.info("sesstionId: {}", session.getId());
+		log.info("sesstionMaxInactiveInterval: {}", session.getMaxInactiveInterval());
+		log.info("sesstionCreationTime: {}", new Date(session.getCreationTime()));
+		log.info("sesstionLastAccessedTime: {}", new Date(session.getLastAccessedTime()));
+		
+		return "redirect:/";
+	}
+	
+	// 로그아웃 처리
+	@GetMapping("logout")
+	public String logout(HttpServletResponse response,
+						 HttpServletRequest request) {
+		// 쿠키 삭제 방법
+		// 전과 같은 이름의 쿠키를 만들면서 값을 null로 대체
+//		Cookie cookie = new Cookie("cookieLoginId", null); // null 값으로 설정
+//		cookie.setPath("/"); // 최상위경로에 설정
+//		cookie.setMaxAge(0); // 유지 시간 0초로 설정
+//		response.addCookie(cookie); // 쿠키 추가
+		
+		// 세션은 로그아웃 방법이 2개임
+		HttpSession session = request.getSession(); // 세션 가져오기
+
+		// 1. 쿠키처럼 같은 이름으로 null을 덮어 씌우기
+		session.setAttribute("loginMember", null);
+		
+		// 2. 일괄적으로 세션값을 초기화
+		session.invalidate();
+		
 		return "redirect:/";
 	}
 }

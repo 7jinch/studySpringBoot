@@ -5,57 +5,91 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.example.board.model.board.Board;
+import com.example.board.model.board.BoardWriteForm;
+import com.example.board.model.member.Member;
 import com.example.board.repository.BoardRepository;
 import com.example.board.service.BoardService;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Controller
+@RequestMapping("board")
 public class BoardController {
 	@Autowired // 의존성 주입
 //	private BoardRepository = new BoardRepository();
 //	private BoardRepository repository; // 선언만 해도 스프링이 위 작업을 수행해 줌
 	private BoardService boardService;
 	
-	// 메인 페이지
-	@GetMapping("/")
-	public String home() {
-		log.info("home() 실행");
-		return "redirect:/list";
-	}
-	
 	// 게시글 작성 페이지 이동
 	@GetMapping("write")
-	public String writeFomr() {
+	public String writeFomr(Model model,
+							@SessionAttribute(name="loginMember", required=false) Member loginMember) {
+							// 세션 중 loginMember라는 이름의 세션을 찾아서 loginMember라면 Member 타입 변수에 저장하기
 		log.info("writeForm() 실행");
-		return "write";
+		
+		// 세션 체크하기: 로그인한 사람만 접근 가능
+		if(loginMember == null) {
+			return "redirect:/member/login";
+		}
+		
+		model.addAttribute("writeForm", new BoardWriteForm());
+		return "board/write";
 	}
 	
 	@PostMapping("write")
-	public String writeFomr2(@ModelAttribute Board board) {
+	public String writeFomr2(@Validated @ModelAttribute(name="writeForm") BoardWriteForm boardWriteForm,
+							 BindingResult result,
+							 @SessionAttribute(name="loginMember") Member loginMember) {
 		log.info("writeForm2() 실행");
+		log.info("{}", boardWriteForm);
 		
-		// 초기 조회수와 작성일 세팅하기
-		board.setHitAndCreatedTime();
+		// 에러가 발생하면 다시 글쓰기 페이지로 이동시키기
+		if(result.hasErrors()) {
+			
+			return "board/write";
+		}
 		
-		log.info("{}", board);
+		Board board = BoardWriteForm.toBoard(boardWriteForm); // 게시물 이름과 내용 세팅하면서 Board 객체를 생성해주기
+		board.setMember(loginMember); // 로그인한 멤버(글 쓴 멤버 세팅)
+		
 		boardService.saveBoard(board);
+		
 		// return "index"; // 이렇게 하면 url에 /write가 남음
-		return "redirect:list"; // 이렇게 하면 url이 /list가 됨
+		return "redirect:/board/list"; // 이렇게 하면 url이 /list가 됨
 	}
 	
 	// 게시글 목록 페이지
 	@GetMapping("list")
-	public String list(Model model) {
+	public String list(Model model,
+					   // HttpServletRequest request) {
+					   @SessionAttribute(name="loginMember", required=false) Member loginMember) {
+					   // 세션 중 loginMember라는 이름의 세션을 찾아서 loginMember라면 Member 타입 변수에 저장하기
 		log.info("list() 실행");
+//		HttpSession session = request.getSession(false);
+//		if(session == null) {
+//			return "redirect:/member/login";
+//		}
+
+		// 세션 체크하기: 로그인한 사람만 접근 가능
+		if(loginMember == null) {
+			return "redirect:/member/login";
+		}
+		
 		// 1. 리포지토리에서 데이터 가져오기
 		List<Board> boards = boardService.findAll();
 		log.info("글 목록: {}", boards);
@@ -64,7 +98,7 @@ public class BoardController {
 		model.addAttribute("boardList", boards);
 		
 		// 3. list.html에서 반복문으로 실제 페이지에 출력하기
-		return "list";
+		return "board/list";
 	}
 	
 	// 게시글 하나 읽기
@@ -72,21 +106,21 @@ public class BoardController {
 	public String read(@RequestParam(value = "id", required = false) Long id, Model model) {
 		Board board = boardService.findBoard(id);
 		model.addAttribute(board);
-		return "read";
+		return "board/read";
 	}
 	
 	// 삭제: 게시물의 패스워드와 입력한 패스워드가 같아야 삭제
 	@PostMapping("delete")
 	public String remove(@RequestParam("id") Long id, @RequestParam("password") String password) {
 		Board board = boardService.findBoard(id);
-		if(board != null) {
-			if(board.getPassword().equals(password)) {
-				log.info("맞음 - 삭제");
-				boardService.deleteBoard(id);
-			}
-			log.info("안 맞음 - 삭제 안 함");
-		}
-		return "redirect:/list";
+//		if(board != null) {
+//			if(board.getPassword().equals(password)) {
+//				log.info("맞음 - 삭제");
+//				boardService.deleteBoard(id);
+//			}
+//			log.info("안 맞음 - 삭제 안 함");
+//		}
+		return "redirect:/board/list";
 	}
 	
 	// 수정
@@ -94,12 +128,12 @@ public class BoardController {
 	public String updateFome(@RequestParam("id") Long id, Model model) {
 		Board board = boardService.findBoard(id);
 		model.addAttribute("board", board);
-		return "update";
+		return "board/update";
 	}
 
 	@PostMapping("update")
 	public String update(@RequestParam("id") Long id, @ModelAttribute Board updateBoard) {
 		boardService.editBoard(id, updateBoard);
-		return "redirect:/list";
+		return "redirect:/board/list";
 	}
 }

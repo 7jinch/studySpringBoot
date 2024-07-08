@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.example.board.model.board.Board;
 import com.example.board.repository.BoardRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -17,10 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 public class BoardService {
 	
 	// 의존성 주입
-	@Autowired // 의존성 주입
-	private BoardRepository boardRepository;
+//	@Autowired // setter로 의존성 주입하기
+//	private BoardRepository boardRepository;
+	
+	// 생성자로 의존성 주입하기
+	private final BoardRepository boardRepository;
+	public BoardService(BoardRepository boardRepository) {
+		this.boardRepository = boardRepository;
+	}
 	
 	// 게시물 등록
+	@Transactional // 혹시라도 터졌다면 롤백해라, 에러가 발생하면 insert를 안 하게 해 줌
 	public void saveBoard(Board board) {
 		boardRepository.save(board);
 	}
@@ -48,14 +56,14 @@ public class BoardService {
 	public void editBoard(Long id, Board updateBoard) {
 		Board findBoard = findBoard(id);
 		
-		if(findBoard != null && findBoard.getPassword().equals(updateBoard.getPassword())) {
-			log.info("맞음 - 수정");
-			findBoard.setTitle(updateBoard.getTitle());
-			findBoard.setContents(updateBoard.getContents());
-			findBoard.setUsername(updateBoard.getUsername());
-		} else {
-			log.info("안 맞음 - 삭제 안 함");
-		}
+//		if(findBoard != null && findBoard.getPassword().equals(updateBoard.getPassword())) {
+//			log.info("맞음 - 수정");
+//			findBoard.setTitle(updateBoard.getTitle());
+//			findBoard.setContents(updateBoard.getContents());
+//			findBoard.setUsername(updateBoard.getUsername());
+//		} else {
+//			log.info("안 맞음 - 삭제 안 함");
+//		}
 		
 		// 위의 saveBoard 메서드의 save()에서는 id가 없기 때문에 그냥 board를 생성함
 		// 이 editBoard 메서드의 save()는 스냅샷을 찍을 떄 id가 있고 값이 달라졌다면 기존의 board는 수정함

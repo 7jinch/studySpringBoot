@@ -23,7 +23,7 @@ public class MemberService {
 	}
 	
 	// 트랜잭션 관리는 service에서
-	@Transactional // 혹시라도 터졌다면 롤백해라
+	@Transactional // 혹시라도 터졌다면 롤백해라, 에러가 발생하면 insert를 안 하게 해 줌
 	public void saveMember(Member member) {
 		memberRepository.save(member);
 	}
