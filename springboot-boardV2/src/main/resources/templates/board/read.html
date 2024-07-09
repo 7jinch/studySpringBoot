@@ -8,7 +8,6 @@
 <body>
 <div id="container">
   <h1>[ 게시판 - 글 읽기 ]</h1>
-  <form th:action="@{/board/delete(id=${board.id})}" method="post">
     <table th:object=${board}>
       <tr>
         <th>제목</th>
@@ -28,7 +27,7 @@
       </tr>
       <tr>
         <th>작성자</th>
-        <td th:text="*{username}"></td>
+        <td th:text="*{member.name}"></td>
       </tr>
       <tr>
         <th>패스워드</th>
@@ -37,11 +36,12 @@
     </table>
     <p>
     <div class="center">
+    	<th:block th:if="${session.loginMember.member_id == board.member.member_id}">
+	      <input type="button" th:onclick="|location.href='/board/update?id=${board.board_id}'|" value="수정하기">
+	      <input type="button" th:onclick="|location.href='@{delete(id=${board.board_id})}'|" value="삭제하기">
+    	</th:block>
       <input type="button" onclick="location.href='/board/list'" value="리스트로">
-      <input type="button" th:onclick="|location.href='/board/update?id=${board.id}'|" value="수정하기">
-      <input type="submit" value="삭제하기">
   </div>
-  </form>
 </div>
 </body>
 </html>

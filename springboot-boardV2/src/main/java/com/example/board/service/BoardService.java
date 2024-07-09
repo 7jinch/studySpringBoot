@@ -42,31 +42,32 @@ public class BoardService {
 	// 특정 게시물 조회
 	public Board findBoard(Long id) {
 		// 기존에 하던 방식
-		Board board = boardRepository.findById(id).get();
-		board.addHit();
-		saveBoard(board);
-		return board;
+//		Board board = boardRepository.findById(id).get();
+//		board.addHit();
+//		saveBoard(board);
+//		return board;
 		
 		// board를 찾았으면 그걸 반환하고 못 찾았으면 null을 반환
-//		Optional<Board> board = boardRepository.findById(id);
-//		return board.orElse(null);
+		Optional<Board> optionalBoard = boardRepository.findById(id);
+		Board board = optionalBoard.orElse(null);
+
+		if (board != null) {
+		    board.addHit(); // 게시물 조회수 증가
+		    boardRepository.save(board); // 변경된 내용 저장
+		}
+		return board;
 	} 
 	
 	// 게시물 수정
-	public void editBoard(Long id, Board updateBoard) {
-		Board findBoard = findBoard(id);
+	@Transactional
+	public void editBoard(Board updateBoard) {
+		Board findBoard = findBoard(updateBoard.getBoard_id()); // db에서 가져올 때 스냅샷을 찍음
 		
-//		if(findBoard != null && findBoard.getPassword().equals(updateBoard.getPassword())) {
-//			log.info("맞음 - 수정");
-//			findBoard.setTitle(updateBoard.getTitle());
-//			findBoard.setContents(updateBoard.getContents());
-//			findBoard.setUsername(updateBoard.getUsername());
-//		} else {
-//			log.info("안 맞음 - 삭제 안 함");
-//		}
+		findBoard.setTitle(updateBoard.getTitle());
+		findBoard.setContents(updateBoard.getContents());
+		findBoard.setHit(updateBoard.getHit());
 		
-		// 위의 saveBoard 메서드의 save()에서는 id가 없기 때문에 그냥 board를 생성함
-		// 이 editBoard 메서드의 save()는 스냅샷을 찍을 떄 id가 있고 값이 달라졌다면 기존의 board는 수정함
+		// save(): 스냅샷과 데이터가 다르면 -> pk가 없다면 생성해주고 pk가 있다면 수정해 줌
 		boardRepository.save(findBoard);
 	}
 	

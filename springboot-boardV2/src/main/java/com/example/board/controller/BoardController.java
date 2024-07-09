@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.example.board.model.board.Board;
+import com.example.board.model.board.BoardUpdateForm;
 import com.example.board.model.board.BoardWriteForm;
 import com.example.board.model.member.Member;
 import com.example.board.repository.BoardRepository;
@@ -37,7 +38,7 @@ public class BoardController {
 	
 	// 게시글 작성 페이지 이동
 	@GetMapping("write")
-	public String writeFomr(Model model,
+	public String writeForm(Model model,
 							@SessionAttribute(name="loginMember", required=false) Member loginMember) {
 							// 세션 중 loginMember라는 이름의 세션을 찾아서 loginMember라면 Member 타입 변수에 저장하기
 		log.info("writeForm() 실행");
@@ -52,7 +53,7 @@ public class BoardController {
 	}
 	
 	@PostMapping("write")
-	public String writeFomr2(@Validated @ModelAttribute(name="writeForm") BoardWriteForm boardWriteForm,
+	public String writeForm2(@Validated @ModelAttribute(name="writeForm") BoardWriteForm boardWriteForm,
 							 BindingResult result,
 							 @SessionAttribute(name="loginMember") Member loginMember) {
 		log.info("writeForm2() 실행");
@@ -103,9 +104,21 @@ public class BoardController {
 	
 	// 게시글 하나 읽기
 	@GetMapping("read")
-	public String read(@RequestParam(value = "id", required = false) Long id, Model model) {
+	public String read(@RequestParam(value = "id", required = false) Long id,
+					   Model model,
+					   @SessionAttribute(name="loginMember", required=false) Member loginMember) {
+		
+		if(loginMember == null) {
+			return "redirect:/member/login";
+		}
+		
 		Board board = boardService.findBoard(id);
-		model.addAttribute(board);
+		
+		if(board == null) {
+			return "notFound";
+		}
+		
+		model.addAttribute("board", board);
 		return "board/read";
 	}
 	
@@ -125,15 +138,36 @@ public class BoardController {
 	
 	// 수정
 	@GetMapping("update")
-	public String updateFome(@RequestParam("id") Long id, Model model) {
+	public String updateFome(@RequestParam(name="id", required=false) Long id,
+							 Model model,
+							 @SessionAttribute(name="loginMember", required=false) Member loginMember) {
+		
+		if(loginMember == null) {
+			return "redirect:/member/login";
+		}
+		
 		Board board = boardService.findBoard(id);
-		model.addAttribute("board", board);
+		if(board == null || !board.getMember().getMember_id().equals(loginMember.getMember_id())) {
+			return "redirect:/board/list";
+		}
+		
+		BoardUpdateForm boardUpdateForm = Board.toUpdateForm(board);
+		
+		model.addAttribute("boardUpdateForm", boardUpdateForm);
+		
 		return "board/update";
 	}
 
 	@PostMapping("update")
-	public String update(@RequestParam("id") Long id, @ModelAttribute Board updateBoard) {
-		boardService.editBoard(id, updateBoard);
+	public String update(@Validated @ModelAttribute BoardUpdateForm boradUpdateBoard,
+						 BindingResult result) {
+		
+		if(result.hasErrors()) {
+			return "board/update";
+		}
+		
+		Board updateBoard = BoardUpdateForm.toBoard(boradUpdateBoard);
+		boardService.editBoard(updateBoard);
 		return "redirect:/board/list";
 	}
 }
