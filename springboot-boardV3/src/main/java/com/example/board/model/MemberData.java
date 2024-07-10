@@ -1,4 +1,4 @@
-package com.example.mvc.model;
+package com.example.board.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
