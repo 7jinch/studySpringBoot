@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 수정</title>
+    <link rel="stylesheet" href="/default.css">
+</head>
+<body>
+<div id="container">
+  <h1>[ 게시판 - 글수정 ]</h1>
+  <form th:action="@{/board/update(board_id=${boardUpdateForm.board_id})}" method="post" th:object="${boardUpdateForm}">
+    <table>
+      <tr>
+        <th>제목</th>
+        <td>
+        	<input type="text" th:field="*{title}">
+       		<div class="error" th:errors="*{title}"></div>
+       	</td>
+      </tr>
+      <tr>
+        <th>내용</th>
+        <td>
+        	<textarea th:field="*{contents}" rows="10" cols="30"></textarea>
+        	<div class="error" th:errors="*{contents}"></div>
+        </td>
+      </tr>
+      <tr>
+        <th>조회수</th>
+        <td name="hit" th:text="*{hit}"></td>
+      </tr>
+      <tr>
+        <th>작성일</th>
+        <td name="created_time" th:text="*{#temporals.format(created_time, 'yyyy년 MM월 dd일 HH시 mm분')}"></td>
+      </tr>
+      <tr>
+        <th>작성자</th>
+        <td th:text= "*{member.name}"></td>
+      </tr>
+    </table>
+    <p>
+    <div class="center">
+    <input type="button" onclick="location.href='/board/list'" value="리스트로">
+    <input type="submit" value="수정하기">
+    <input type="reset" value="취소">
+  </div>
+  <input type="hidden" th:field="*{member}">
+  <input type="hidden" th:field="*{hit}">
+  <input type="hidden" th:field="*{created_time}">
+  </form>
+</div>
+</body>
+</html>

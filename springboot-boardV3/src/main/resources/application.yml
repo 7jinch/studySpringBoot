@@ -1,5 +1,8 @@
 server:
   port: 9000
+  error:
+    whitelabel:
+      enabled: true
   
 spring:
   datasource:
@@ -15,3 +18,4 @@ spring:
       hibernate:
         show-sql: true
         format-sql: true
+        

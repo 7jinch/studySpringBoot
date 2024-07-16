@@ -38,15 +38,14 @@ public class BoardController {
 	
 	// 게시글 작성 페이지 이동
 	@GetMapping("write")
-	public String writeForm(Model model,
-							@SessionAttribute(name="loginMember", required=false) Member loginMember) {
+	public String writeForm(Model model) {
 							// 세션 중 loginMember라는 이름의 세션을 찾아서 loginMember라면 Member 타입 변수에 저장하기
-		log.info("writeForm() 실행");
+//		log.info("writeForm() 실행");
 		
 		// 세션 체크하기: 로그인한 사람만 접근 가능
-		if(loginMember == null) {
-			return "redirect:/member/login";
-		}
+//		if(loginMember == null) {
+//			return "redirect:/member/login";
+//		}
 		
 		model.addAttribute("writeForm", new BoardWriteForm());
 		return "board/write";
@@ -55,9 +54,9 @@ public class BoardController {
 	@PostMapping("write")
 	public String writeForm2(@Validated @ModelAttribute(name="writeForm") BoardWriteForm boardWriteForm,
 							 BindingResult result,
-							 @SessionAttribute(name="loginMember") Member loginMember) {
-		log.info("writeForm2() 실행");
-		log.info("{}", boardWriteForm);
+							 @SessionAttribute(name="loginMember", required=false) Member loginMember) {
+//		log.info("writeForm2() 실행");
+//		log.info("{}", boardWriteForm);
 		
 		// 에러가 발생하면 다시 글쓰기 페이지로 이동시키기
 		if(result.hasErrors()) {
@@ -76,24 +75,25 @@ public class BoardController {
 	
 	// 게시글 목록 페이지
 	@GetMapping("list")
-	public String list(Model model,
+	public String list(Model model
 					   // HttpServletRequest request) {
-					   @SessionAttribute(name="loginMember", required=false) Member loginMember) {
+					   // @SessionAttribute(name="loginMember", required=false) Member loginMember) {
 					   // 세션 중 loginMember라는 이름의 세션을 찾아서 loginMember라면 Member 타입 변수에 저장하기
-		log.info("list() 실행");
+			) {
+//		log.info("list() 실행");
 //		HttpSession session = request.getSession(false);
 //		if(session == null) {
 //			return "redirect:/member/login";
 //		}
 
 		// 세션 체크하기: 로그인한 사람만 접근 가능
-		if(loginMember == null) {
-			return "redirect:/member/login";
-		}
+//		if(loginMember == null) {
+//			return "redirect:/member/login";
+//		}
 		
 		// 1. 리포지토리에서 데이터 가져오기
 		List<Board> boards = boardService.findAll();
-		log.info("글 목록: {}", boards);
+//		log.info("글 목록: {}", boards);
 		
 		// 2. 모델에 담기
 		model.addAttribute("boardList", boards);
@@ -104,13 +104,12 @@ public class BoardController {
 	
 	// 게시글 하나 읽기
 	@GetMapping("read")
-	public String read(@RequestParam(value = "id", required = false) Long id,
-					   Model model,
-					   @SessionAttribute(name="loginMember", required=false) Member loginMember) {
+	public String read(@RequestParam(value="id", required=false) Long id,
+					   Model model) {
 		
-		if(loginMember == null) {
-			return "redirect:/member/login";
-		}
+//		if(loginMember == null) {
+//			return "redirect:/member/login";
+//		}
 		
 		Board board = boardService.findBoard(id);
 		
