@@ -9,6 +9,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BoardController {
   // 페이징을 위한 상수
   private final int countPerPage = 10;
-  private final int pagePerGroup = 10;
+  private final int pagePerGroup = 5;
 
   // 의존성 주입 방법 1
   // @Autowired // 필드 주입 방식임
@@ -135,7 +136,8 @@ public class BoardController {
 
   // 게시글 목록 페이지
   @GetMapping("list")
-  public String list(@PageableDefault(size = 10) Pageable pageable,
+  public String list(
+      @PageableDefault(size = 10, sort = "id", direction = Direction.DESC) Pageable pageable,
       @RequestParam(name = "page", defaultValue = "1") int page,
       // public String list(@PageableDefault(size=10) Pageable pageable,
       Model model
@@ -175,7 +177,7 @@ public class BoardController {
     PageNavigator navi =
         new PageNavigator(countPerPage, pagePerGroup, page, totalPostCount, totalPageCount);
     model.addAttribute("navi", navi);
-    
+
     return "board/list";
   }
 
@@ -195,7 +197,7 @@ public class BoardController {
 
     model.addAttribute("board", board);
 
-    // 첨부파일이 있는 지 찾기
+    // 첨부파일이 있는지 찾기
     AttachedFile attachedFile = boardService.findFileByBoardId(board);
     // log.info("첨부파일: {}", attachedFile);
 
@@ -224,7 +226,7 @@ public class BoardController {
     }
     // log.info("찾은 삭제하려는 board의 id: {}", board.getBoard_id());
 
-    boardService.deleteBoard(id);
+    boardService.deleteBoard(board);
 
     return "redirect:/board/list";
   }
@@ -247,19 +249,25 @@ public class BoardController {
 
     model.addAttribute("boardUpdateForm", boardUpdateForm);
 
+    // 첨부파일 체크
+    AttachedFile attachedFile = boardService.findFileByBoardId(board);
+    if (attachedFile != null) {
+      model.addAttribute("file", attachedFile);
+    }
+
     return "board/update";
   }
 
   @PostMapping("update")
   public String update(@Validated @ModelAttribute BoardUpdateForm boradUpdateBoard,
-      BindingResult result) {
+      BindingResult result, @RequestParam(name="file", required=false) MultipartFile file) {
 
     if (result.hasErrors()) {
       return "board/update";
     }
 
     Board updateBoard = BoardUpdateForm.toBoard(boradUpdateBoard);
-    boardService.editBoard(updateBoard);
+    boardService.editBoard(updateBoard, boradUpdateBoard.isFileRemoved(), file);
 
     return "redirect:/board/list";
   }

@@ -19,6 +19,7 @@ public class BoardUpdateForm {
 	private Member member;
 	private Long hit;
 	private LocalDateTime created_time;
+	private boolean fileRemoved;
 	
 	public static Board toBoard(BoardUpdateForm boardUpdateForm) {
 		Board board = new Board();
