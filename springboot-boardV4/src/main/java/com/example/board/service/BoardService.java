@@ -69,9 +69,9 @@ public class BoardService {
 
   // 전체 게시물 조회
   public Page<Board> findAll(Pageable pageable) {
-    Page<Board> page = boardRepository.findAll(pageable);
+    Page<Board> pages = boardRepository.findAll(pageable);
 
-    return page;
+    return pages;
   }
 
   // 특정 게시물 조회
@@ -167,5 +167,11 @@ public class BoardService {
 
   public int getTotal() {
     return (int) boardRepository.count();
+  }
+
+  public Page<Board> findSearch(String searchText, Pageable pageable) {
+    Page<Board> pages = boardRepository.findByTitleContaining(searchText, pageable);
+    
+    return pages;
   }
 }

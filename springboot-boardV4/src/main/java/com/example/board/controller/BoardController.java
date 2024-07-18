@@ -62,23 +62,23 @@ public class BoardController {
   private final FileService fileService;
 
   // 초기 데이터 생성
-  // @PostConstruct
-  // public void initData() {
-  // log.info("데이터 초기화 중...");
-  // for (int i = 0; i <= 100; i++) {
-  // BoardWriteForm boardWriteForm = new BoardWriteForm();
-  // boardWriteForm.setTitle("제목" + i);
-  // boardWriteForm.setContents("내용" + i);
-  //
-  // Member member = new Member();
-  // member.setMember_id("aaaa");
-  //
-  // Board board = BoardWriteForm.toBoard(boardWriteForm);
-  // board.setMember(member);
-  //
-  // boardService.saveBoard(board);
-  // }
-  // }
+//   @PostConstruct
+//   public void initData() {
+//   log.info("데이터 초기화 중...");
+//   for (int i = 0; i <= 100; i++) {
+//   BoardWriteForm boardWriteForm = new BoardWriteForm();
+//   boardWriteForm.setTitle("검색 테스트입니다. " + i);
+//   boardWriteForm.setContents("내용" + i);
+//  
+//   Member member = new Member();
+//   member.setMember_id("aaaa");
+//  
+//   Board board = BoardWriteForm.toBoard(boardWriteForm);
+//   board.setMember(member);
+//  
+//   boardService.saveBoard(board);
+//   }
+//   }
 
   // 게시글 작성 페이지 이동
   @GetMapping("write")
@@ -139,6 +139,7 @@ public class BoardController {
   public String list(
       @PageableDefault(size = 10, sort = "id", direction = Direction.DESC) Pageable pageable,
       @RequestParam(name = "page", defaultValue = "1") int page,
+      @RequestParam(name = "searchText", defaultValue = "") String searchText,
       // public String list(@PageableDefault(size=10) Pageable pageable,
       Model model
   // HttpServletRequest request) {
@@ -156,9 +157,15 @@ public class BoardController {
     // return "redirect:/member/login";
     // }
 
+    Page<Board> boards = null;
+
     // 1. 리포지토리에서 데이터 가져오기
-    Page<Board> boards = boardService.findAll(pageable);
-    // log.info("글 목록: {}", boards);
+    if (!searchText.equals("")) { // 검색어가 있을 때
+      boards = boardService.findSearch(searchText, pageable);
+    } else { // 검색어가 없을 때
+      boards = boardService.findAll(pageable);
+      // log.info("글 목록: {}", boards);
+    }
 
     // 2. 모델에 담기
     model.addAttribute("boardList", boards);
@@ -166,17 +173,20 @@ public class BoardController {
     // 3. list.html에서 반복문으로 실제 페이지에 출력하기
 
     // 전체 글 수
-    int totalPostCount = boardService.getTotal();
+    // int totalPostCount = boardService.getTotal();
     // log.info("전체 글 수: {}", totalPostCount);
+    int totalPostCount = (int)boards.getTotalElements();
 
     // 전체 페이지 수
-    int totalPageCount = pageable.getPageSize();
+    // int totalPageCount = pageable.getPageSize();
     // log.info("전체 페이지 수: {}", totalPageCount);
+    int totalPageCount = boards.getTotalPages();
 
     // 4. 페이징
     PageNavigator navi =
         new PageNavigator(countPerPage, pagePerGroup, page, totalPostCount, totalPageCount);
     model.addAttribute("navi", navi);
+    model.addAttribute("searchText", searchText);
 
     return "board/list";
   }
@@ -260,7 +270,7 @@ public class BoardController {
 
   @PostMapping("update")
   public String update(@Validated @ModelAttribute BoardUpdateForm boradUpdateBoard,
-      BindingResult result, @RequestParam(name="file", required=false) MultipartFile file) {
+      BindingResult result, @RequestParam(name = "file", required = false) MultipartFile file) {
 
     if (result.hasErrors()) {
       return "board/update";

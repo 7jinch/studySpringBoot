@@ -23,3 +23,7 @@ th, td {
 .error {
 	color: red;
 }
+
+.right {
+	text-align: right;
+}
