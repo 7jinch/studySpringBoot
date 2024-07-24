@@ -4,11 +4,99 @@
 <meta charset="UTF-8">
 <title>회원가입 페이지</title>
 <link rel="stylesheet" href="/default.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(function () {});
+
+function joinFormValidator() {
+    const id = $('#id').val(); // 아이디
+    const password = $('#password').val(); // 비밀번호
+    const name = $('#name').val(); // 이름
+    const gender = $("input[name='gender']:checked"); // 성별
+    const birth = $('#birth').val(); // 생년월일
+    const email = $('#email').val(); // 이메일
+    
+    const now = new Date(); // 현재 날짜
+   	const birthDate = new Date(birth); // 입력받은 생년월일 날짜 포매팅하기
+   	
+   	const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 이메일 정규표현식
+   	let errorMessage = "";
+   	
+   	function clear() {
+   		$('#error-id').text("");
+   		$('#error-password').text("");
+   		$('#error-name').text("");
+   		$('#error-gender').text("");
+   		$('#error-birth').text("");
+   		$('#error-email').text("");
+   	}
+   	
+   	
+    // 유효성 검사
+    if(id.length <= 3 || id.length >= 21) {
+    	errorMessage = "아이디는 4자 ~ 20자 사이로 해라";
+    	alert(errorMessage);
+    	clear();
+    	$('#error-id').text(errorMessage);
+    	$('#id').focus();
+    	return false;
+    } else if(password.length <= 3 || password.length >= 21) {
+    	errorMessage = "비밀번호는 4자 ~ 20자 사이로 해라";
+    	alert(errorMessage);
+    	clear();
+    	$('#error-password').text(errorMessage);
+    	$('#password').focus();
+    	return false;
+    } else if(name == null || name == "" || name == " "){
+    	errorMessage = "이름은 공백이면 안 됨";
+    	alert(errorMessage);
+    	clear();
+    	$('#error-name').text(errorMessage);
+    	$('#name').focus();
+    	return false;
+    } else if(gender.length < 1){
+    	errorMessage = "성별을 정확히 선택해라";
+    	alert(errorMessage);
+    	clear();
+    	$('#error-gender').text(errorMessage);
+    	$('input[name="gender"]').focus();
+    	return false;
+    } else if(birthDate >= now || !birth){
+    	errorMessage = "니는 미래에서 왔음?";
+    	alert(errorMessage);
+    	clear();
+    	$('#error-birth').text(errorMessage);
+    	$('#birth').focus();
+    	return false;
+    } else if(!reg.test(email)){
+    	errorMessage = "니 이메일 왜 그럼?";
+    	alert(errorMessage);
+    	clear();
+    	$('#error-email').text(errorMessage);
+    	$('#email').focus();
+    	return false;
+    }
+   	 $.post('http://localhost:9000/member/join',
+   			{
+   				id,
+   				password,
+   				name,
+   				gender,
+   				birth,
+   				email
+   			},
+   			function(data, status){
+   				alert("Data: " + data + "\nStatus: " + status);
+   				location.href = '/';
+   			}
+   	)
+}
+</script>
 </head>
 <body>
 	<div id="container">
 		<h1>회원가입</h1>
-		<form action="join" method="POST" th:object="${member}">
+		<form onsubmit="return false;" action="join" method="POST" th:object="${member}">
 			<!-- <div class="error" th:if="${에러메시지}">[[${에러메시지}]]</div> -->
 			<div th:if="${#fields.hasGlobalErrors()}">
 				<p th:each="error : ${#fields.globalErrors}" th:text="${error}" class="error">
@@ -16,57 +104,42 @@
 			<table>
 				<tr>
 					<th>아이디</th>
-					<td>
-						<input type="text" th:field="*{member_id}">
-						<div class="error" th:errors="*{member_id}"></div>
-					</td>
+					<td><input id="id" type="text" th:field="*{member_id}"> <!-- <div id="error-id" class="error" th:errors="*{member_id}"></div> -->
+						<div id="error-id" class="error"></div></td>
 				</tr>
 				<tr>
 					<th>비밀번호</th>
-					<td>
-						<input type="password" th:field="*{password}">
-						<div class="error" th:errors="*{password}"></div>	
-					</td>
+					<td><input id="password" type="password" th:field="*{password}"> <!--  <div id="error-password" class="error" th:errors="*{password}"></div>-->
+						<div id="error-password" class="error"></div></td>
 				</tr>
 				<tr>
 					<th>이름</th>
-					<td>
-						<input type="text" th:field="*{name}">
-						<div class="error" th:errors="*{name}"></div>
-					</td>
+					<td><input id="name" type="text" th:field="*{name}"> <!-- <div id="error-name" class="error" th:errors="*{name}"></div> -->
+						<div id="error-name" class="error"></div></td>
 				</tr>
 				<tr>
 					<th>성별</th>
-					<td>
-						<th:block th:each="gender : ${T(com.example.board.model.member.GenderType).values()}">
+					<td><th:block th:each="gender : ${T(com.example.board.model.member.GenderType).values()}">
 							<label for="${#ids.next('gender')}" th:text="${gender.desc}"></label>
-							<input type="radio" th:field="*{gender}" th:value="${gender}">
+							<input id="gender" type="radio" th:field="*{gender}" th:value="${gender}">
 						</th:block>
-					<!--
-						<label for="gender1">남</label>
-						<input type="radio" th:field="*{gender}" value="MALE">
-						<label for="gender2">여</label>
-						<input type="radio" th:field="*{gender}" value="FEMALE">
-						<div class="error" th:errors="*{gender}"></div>
-					  -->
-					</td>
+						<div id="error-gender" class="error"></div></td>
 				</tr>
 				<tr>
 					<th>생년월일</th>
-					<td>
-						<input type="date" th:field="*{birth}">
-						<div class="error" th:errors="*{birth}"></div>
-					</td>
+					<td><input id="birth" type="date" th:field="*{birth}"> <!-- <div id="error-birth" class="error" th:errors="*{birth}"></div> -->
+						<div id="error-birth" class="error"></div></td>
 				</tr>
 				<tr>
 					<th>이메일</th>
-					<td><input type="text" th:field="*{email}"></td>
+					<td><input id="email" type="text" th:field="*{email}">
+						<div id="error-email" class="error"></div></td>
 				</tr>
 			</table>
 			<p>
 			<div class="center">
-				<input type="button" onclick="location.href='/'" value="메인으로">	
-				<input type="submit" value="가입하기">
+				<input type="button" onclick="location.href='/'" value="메인으로">
+				<input type="submit" value="가입하기" onclick="return joinFormValidator();">
 				<input type="reset" value="다시작성">
 			</div>
 		</form>
