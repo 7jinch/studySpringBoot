@@ -1,0 +1,31 @@
+server:
+  port: 9000
+  error:
+    whitelabel:
+      enabled: true
+  
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/datasa
+    username: root
+    password: root
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show-sql: true
+        format-sql: true
+  servlet:
+    multipart:
+      max-file-size: # 첨부파일 하나당 최대 용량 제한
+        1MB
+      max-request-size: # 요청이 들어왔을 때 모든 파일의 최대 용량 제한
+        5MB
+  data:
+    web:
+      pageable: # 페이징 글로벌 설정
+        default-page-size: 10 # 한 페이지에 보여줄 게시글 수
+        one-indexed-parameters: true # 페이지를 1부터 시작(이거 설정 안 하면 0부터임)

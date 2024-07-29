@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>게시글 읽기</title>
+<link rel="stylesheet" href="/default.css">
+<style>
+#comments {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+	gap: 20px;
+}
+#comment{
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	
+	width: 100%;
+	border-bottom: 2px solid black;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+	<div id="container">
+		<h1>[ 게시판 - 글 읽기 ]</h1>
+		<input type="button" onclick="location.href='/board/list'" value="리스트로">
+		<p>
+		<table th:object="${board}">
+			<tr>
+				<th>제목</th>
+				<td th:text="*{title}"></td>
+			</tr>
+			<tr>
+				<th>내용</th>
+				<td th:text="*{contents}"></td>
+			</tr>
+			<tr>
+				<th>조회수</th>
+				<td th:text="*{hit}"></td>
+			</tr>
+			<tr>
+				<th>작성일</th>
+				<td th:text="*{#temporals.format(created_time, 'yyyy년 MM월 dd일 HH시 mm분')}"></td>
+			</tr>
+			<tr>
+				<th>작성자</th>
+				<td th:text="*{member.name}"></td>
+			</tr>
+			<tr th:if="${file}">
+				<th>첨부파일</th>
+				<td><a th:text="${file.original_filename}" th:href="@{/board/download/{id}(id=${file.attachedFile_id})}"></a></td>
+			</tr>
+		</table>
+		<p>
+		<div class="center">
+			<th:block th:if="${session.loginMember.member_id == board.member.member_id}">
+				<input type="button" th:onclick="|location.href='/board/update?id=${board.id}'|" value="수정하기">
+				<input type="button" th:onclick="|location.href='@{delete(id=${board.id})}'|" value="삭제하기">
+			</th:block>
+		</div>
+		<div id="comment-box">
+			<h3>comment</h3>
+			<input id="write-comment" name="write-comment" placeholder="댓글 쓰기" type="text">
+			<input type="button" value="댓글 등록" onclick="submitComment()">
+			<div id="comments"></div>
+		</div>
+		<p>
+	</div>
+
+	<script>
+        function submitComment(){
+            const board_id = [[${board.id}]];
+            const comment = $('#write-comment').val();
+            
+            if(comment === ""){
+            	alert("입력하시오");
+            	return;
+            }
+            
+            $.ajax({
+                url: "http://localhost:9000/comment/" + board_id,
+                type: "post",
+                data: {
+                    "board_id": board_id,
+                    "comment": comment
+                },
+                success: function(data){
+                    $('#write-comment').val('');
+                },
+                error: function(xhr){
+                    console.error("댓글 등록 오류:", xhr);
+                }
+            })
+                
+            getComments();
+        }
+        
+        function getComments(){
+            const board_id = [[${board.id}]];
+            $.ajax({
+                url: "http://localhost:9000/comment/" + board_id,
+                type: "get",
+                success: function(data){
+                    renderComments(data);
+                },
+                error: function(xhr){
+                    console.error("댓글 가져오기 오류:", xhr);
+                }
+            });
+        }
+        
+        function renderComments(comments){
+            let commentHtml = "";
+            
+            if(comments.length === 0){
+                commentHtml = "<p>댓글이 없음</p>";
+            } else {
+                comments.forEach(comment => {
+                	// 시간 포매팅하기
+                	const date = new Date(comment.created_time);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    const create_time = `${year}년 ${month}월 ${day}일 ${hours}시${minutes}분`;
+                    
+                    commentHtml += `<div id="comment">
+                    					<div>
+	                    					<p>작성자: ${comment.member.member_id}</P>
+	                    					<p>작성일: ${create_time}</P>                    					
+                    					</div>
+                    					<p>${comment.contents}</P>
+                    				</div>
+                    				`;
+                });
+            }
+            
+            $('#comments').html(commentHtml);
+        }
+        
+        $(document).ready(function(){
+            getComments();
+            
+            $('#write-comment').on('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    submitComment();
+                    getComments();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

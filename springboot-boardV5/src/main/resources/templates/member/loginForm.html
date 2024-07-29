@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/default.css">
+<title>로그인 페이지</title>
+</head>
+<body>
+<div id="container">
+	<h1>로그인 페이지</h1>
+	<form action="" method="POST" th:object="${loginForm}">
+		<div th:if="${#fields.hasGlobalErrors()}">
+			<p th:each="error : ${#fields.globalErrors()}" th:text="${error}" class="error">
+		</div>
+		<table>
+			<tr>
+				<th>아이디</th>
+				<td>
+					<input type="text" th:field="*{member_id}">
+					<div th:errors="*{member_id}" class="error"></div>
+				</td>
+			</tr>
+			<tr>
+				<th>비밀번호</th>
+				<td>
+					<input type="password" th:field="*{password}">
+					<div th:errors="*{password}" class="error"></div>
+				</td>
+			</tr>
+		</table>
+		<p>
+		<div class="center">
+			<input type="button" onclick="location.href='/'" value="메인으로">
+			<input type="button" onclick="location.href='/member/join'" value="회원가입">
+			<input type="submit" value="로그인">
+			<input type="reset" value="다시작성">
+		</div>
+	</form>
+</div>
+</body>
+</html>
