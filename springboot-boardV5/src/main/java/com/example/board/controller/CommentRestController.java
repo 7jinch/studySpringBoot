@@ -74,11 +74,24 @@ public class CommentRestController {
 
   // 댓글 목록
   @GetMapping("{board_id}")
-  public ResponseEntity<List<Comment>> findComments(@PathVariable("board_id") Long board_id) {
+  public ResponseEntity<List<Comment>> findComments(
+      @SessionAttribute("loginMember") Member loginMember,
+      @PathVariable("board_id") Long board_id) {
+    
     Board board = boardService.findBoard(board_id);
-//    Board board = new Board();
-//    board.setId(board_id);
-    List<Comment> comments = commentRepository.findByBoard(board);
+    // Board board = new Board();
+    // board.setId(board_id);
+    List<Comment> comments = commentRepository.findByBoard(board); // db에서 가져오기
+    
+    // 수정, 삭제 권한 여부 검사
+    if(comments != null && comments.size() > 0) {
+      for(Comment comment : comments) {
+        if(comment.getMember().getMember_id().equals(loginMember.getMember_id())) {
+          comment.setWriter(true);
+        }
+      }
+    }
+    
     return ResponseEntity.ok(comments);
   }
 
@@ -87,14 +100,28 @@ public class CommentRestController {
   public ResponseEntity<Comment> updateComment(@SessionAttribute("loginMember") Member loginMember,
       @PathVariable("board_id") Long board_id, @PathVariable("comment_id") Long comment_id,
       @ModelAttribute Comment comment) {
+    
     // 수정 권한이 있는지 검사
-    return ResponseEntity.ok(comment); // 수정된 객체를 리턴
+    Comment findComment = commentRepository.findById(comment_id).get();
+    if(findComment.getMember().getMember_id().equals(loginMember.getMember_id())) {
+      findComment.setContents(comment.getContents());
+      commentRepository.save(findComment);
+    }
+
+    return ResponseEntity.ok(findComment); // 수정된 객체를 리턴
   }
 
   // 댓글 삭제
   @DeleteMapping("{board_id}/{comment_id}")
   public ResponseEntity<String> deleteComment(@SessionAttribute("loginMember") Member loginMember,
       @PathVariable("board_id") Long board_id, @PathVariable("comment_id") Long comment_id) {
+    
+    // 삭제 권한이 있는지 검사
+    Comment findComment = commentRepository.findById(comment_id).get();
+    if(findComment.getMember().getMember_id().equals(loginMember.getMember_id())) {
+      commentRepository.deleteById(comment_id);
+    }
+    
     return ResponseEntity.ok("삭제 성공");
   }
 }

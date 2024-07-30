@@ -20,6 +20,10 @@
 	width: 100%;
 	border-bottom: 2px solid black;
 }
+
+.update-delete {
+    display: none;
+}
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
@@ -64,14 +68,28 @@
 		<div id="comment-box">
 			<h3>comment</h3>
 			<input id="write-comment" name="write-comment" placeholder="댓글 쓰기" type="text">
-			<input type="button" value="댓글 등록" onclick="submitComment()">
+			<input type="button" value="댓글 등록" onclick="submitComments()">
 			<div id="comments"></div>
 		</div>
 		<p>
 	</div>
 
 	<script>
-        function submitComment(){
+    function getComments(){
+        const board_id = [[${board.id}]];
+        $.ajax({
+            url: "http://localhost:9000/comment/" + board_id,
+            type: "get",
+            success: function(data){
+                renderComments(data);
+            },
+            error: function(xhr){
+                console.error("댓글 가져오기 오류:", xhr);
+            }
+        });
+    }
+    
+        function submitComments(){
             const board_id = [[${board.id}]];
             const comment = $('#write-comment').val();
             
@@ -89,27 +107,12 @@
                 },
                 success: function(data){
                     $('#write-comment').val('');
+                    getComments();
                 },
                 error: function(xhr){
                     console.error("댓글 등록 오류:", xhr);
                 }
             })
-                
-            getComments();
-        }
-        
-        function getComments(){
-            const board_id = [[${board.id}]];
-            $.ajax({
-                url: "http://localhost:9000/comment/" + board_id,
-                type: "get",
-                success: function(data){
-                    renderComments(data);
-                },
-                error: function(xhr){
-                    console.error("댓글 가져오기 오류:", xhr);
-                }
-            });
         }
         
         function renderComments(comments){
@@ -134,12 +137,56 @@
 	                    					<p>작성일: ${create_time}</P>                    					
                     					</div>
                     					<p>${comment.contents}</P>
-                    				</div>
+                    				
                     				`;
+                    if(comment.writer){
+                    	commentHtml += "<div class='update-delete-box'><input class='show-update-delete' type='button' value='수정&삭제' />"
+                    	commentHtml += "<div class='update-delete'>";
+	                    commentHtml += "<input type='text' id='comment_" + comment.comment_id + "' value='" + comment.contents + "' />";
+	                    commentHtml += "<input type='button' value='수정' onclick='updateComments(" + comment.comment_id + ")' />";
+	                    commentHtml += "<input type='button' value='삭제' onclick='deleteComments(" + comment.comment_id + ")' />";
+                    	commentHtml += "</div>";
+                    	commentHtml += "</div>"
+                    }
+                    commentHtml += "</div>"
                 });
             }
             
             $('#comments').html(commentHtml);
+        }
+        
+        function updateComments(comment_id){
+        	const yes= confirm("댓글수정함");
+        	if(yes){
+        		const board_id = [[${board.id}]];
+        		const contents = $("#comment_" + comment_id).val();
+        		
+        		$.ajax({
+        			url: "http://localhost:9000/comment/" + board_id + "/" + comment_id,
+        			type: "put",
+        			data: {
+        				"contents": contents
+        			},
+        			success: function(data){
+        				getComments();
+        			}
+        		})
+        	}
+        }
+        
+        function deleteComments(comment_id){
+        	const yes= confirm("삭");
+        	if(yes){
+        		const board_id = [[${board.id}]];
+        		
+        		$.ajax({
+        			url: "http://localhost:9000/comment/" + board_id + "/" + comment_id,
+        			type: "delete",
+        			success: function(data){
+        				getComments();
+        			}
+        		})
+        	}
         }
         
         $(document).ready(function(){
@@ -148,11 +195,23 @@
             $('#write-comment').on('keydown', function(event) {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    submitComment();
+                    submitComments();
                     getComments();
                 }
             });
+            
+            $('#comments').on('keydown', 'input[type="text"]', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const comment_id = $(this).attr('id').split('_')[1];
+                    updateComments(comment_id);
+                }
+            });
+            
+            $('#comments').on('click', '.show-update-delete',function(){
+            	$(this).siblings('.update-delete').toggle();
+            })
         });
-    </script>
-</body>
+        </script>
+    </body>
 </html>
