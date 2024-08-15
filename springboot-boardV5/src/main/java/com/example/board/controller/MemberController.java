@@ -46,7 +46,7 @@ public class MemberController {
 	
 	@PostMapping("join")
 	public String join(@Validated @ModelAttribute(value="member") MemberJoinForm memberJoinForm, // @Validated를 붙여주면 뒤에 있는 객체를 유효성 검사함
-						BindingResult result, // BindingResult 선언만 해줘도 에러가 몇 개가 터지든 이 친구가 잡아줘서 사용자에게는 에러가 보이지 않고 프로그램이 안 멈추고 그대로 흘러감
+						BindingResult result, // BindingResult 선언만 해줘도 에러가 몇 개가 터지든 이 친구가 잡아줘서 사용자에게는 에러가 보이지 않고 프로그램이 안 멈추고 그대로 흘러감, 데이터 바인딩과 유효성 검사 결과를 담고 있음
 						Model model) {
 //		log.info("입력값: {}", memberJoinForm);
 //		log.info("result: {}", result);
